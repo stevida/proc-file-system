@@ -1,0 +1,76 @@
+This is a program for CIS 3207, exploring the /proc virtual file system in linux machines
+
+
+In this project are 3 .c files and 1 header file
+
+cmdline.c
+plist.c
+statparser.c
+tups_header.h
+
+
+In order to keep the design as modular as possible, I included a header which allowed me to quickly
+add function declarations to my protocol, with definitions being placed in statparser.c and plist.c
+
+FUNCTIONS INCLUDED:
+
+DATA * stat_parse(int PID);
+    given a PID returns a struct containing all of the possible data types
+
+DATA * d_malloc(int PID);
+    given a PID allocates memory for the struct when called
+
+FLAGS * cmdline(int argc, char*argv[]);
+    processes the commandline arguments using a case/switch with getopt
+
+unsigned int user_id (int pid);
+    returns the user id of a given PID, used to check if the process files in /proc are user pids
+
+int processlist(FLAGS * flags);
+    used as the main function collecting all of the pid in /proc/
+
+void print_data(DATA * data, FLAGS * flags);
+    given a struct of the data and the flags, prints out according to the flags provided
+
+
+statparser.c holds the function DATA * stat_parse(), which takes int PID and returns a
+struct holding all of the data options for the given PID, with the options being;
+
+-s, state of the process
+-U, user time consumed by the process
+-S, system time
+-v, virtual memory used by the program
+-c, cmdline argument used for the program
+
+
+statparser.c is called for two different verions of the program:
+1) a single instance of a ./tups call where the user specifies a process ID
+2) ./tups call that calls all of the running processes accessible by the given user.
+
+
+
+in main:
+        FLAGS * f = cmdline(argc,argv);
+        DATA * d = d_malloc(f->PID);
+1)
+    d = stat_parse(f->PID);
+    print_data(d,f);
+
+    given a single pid, the program allocates space for the struct containing the data and collects the
+    flags, passing them to print_data() to print them out
+
+2)
+    processlist(f)
+
+    the flags are passed to processlist where the available files in the /proc/ directory essentially
+    perform the same protocol as 1, except for all of the available pids.
+
+testing
+    In order to ensure accurate data was collected, a directory called pid_stat was created
+    to organize all of the data from the stat, statm and cmdline files into one place. Each viable PID had their own
+    respective file created so as to ensure accurate results were being recorded.
+
+    print statements were scattered throughout the program to compare values and ensure the correct files/directories
+    were being opened, which was checked with the files located in pid_stat.
+
+** a Makefile was included to allow easier compilation routines, with a clean command added as well
